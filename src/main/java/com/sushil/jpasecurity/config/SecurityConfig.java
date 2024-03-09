@@ -45,16 +45,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
                         .anyRequest().authenticated())
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/")
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                        .permitAll())
+                .userDetailsService(jpaUserDetailsService)
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
+                .formLogin(this::getFormLoginCustomizer)
+                .logout(this::getLogoutCustomizer)
                 .build();
     }
+
     private void getLogoutCustomizer(LogoutConfigurer<HttpSecurity> logout) {
         logout
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
@@ -68,6 +65,7 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/")
                 .permitAll();
     }
+
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
